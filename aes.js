@@ -19,15 +19,20 @@ function aes(pbkdf2, salt) {
 export class AES {
   constructor(password) {
     this.password = password;
+    this.salt = new ArrayBuffer();
+    this.iv = window.crypto.getRandomValues(new Uint8Array(12));
 
     this.key = null;
     this.aes = null;
   }
 
-  async encrypt() {
+  async encrypt(data) {
     // Make sure that we calculate them only once
-    if(!this.key) { this.key = await pbkdf2(this.password); } 
-    if(!this.aes) { this.aes = await aes(this.key, new ArrayBuffer()); } 
+    if (!this.key) { this.key = await pbkdf2(this.password) };
+    if (!this.aes) { this.aes = await aes(this.key, this.salt) };
 
+    const algorithm = { name: 'AES-GCM', iv: this.iv, additionalData: new Uint8Array(), tagLength: 128 };
+
+    return crypto.encrypt(algorithm, this.aes, data)
   }
 }
