@@ -2,6 +2,21 @@ class DB {
   constructor(db) {
     this.db = db;
   }
+
+  // Set key/value in collection
+  async set(collection, key, value) {
+    const tx = this.db.transaction(collection, 'readwrite');
+    const store = tx.objectStore(collection);
+
+    await new Promise((resolve, reject) => {
+      const request = store.put(value, key);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+
+    await tx.done;
+  }
 }
 
 // Open database
@@ -20,7 +35,10 @@ export async function open(name, version) {
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      console.log('Upgrading database', db);
+
+      if (!db.objectStoreNames.contains('addresses')) {
+        db.createObjectStore('addresses');
+      }
     };
   });
 }
