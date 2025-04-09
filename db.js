@@ -1,9 +1,17 @@
+class DB {
+  constructor(db) {
+    this.db = db;
+  }
+}
+
+// Open database
 export async function open(name, version) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name, version);
 
     request.onsuccess = (event) => {
-      resolve(event.target.result);
+      const db = new DB(event.target.result);
+      resolve(db);
     };
 
     request.onerror = (event) => {
