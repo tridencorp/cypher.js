@@ -1,5 +1,27 @@
 {
   "dependencies": {
     "crypto-js": "^4.2.0"
-  }
+  },
+  "name": "cypher",
+  "version": "1.0.0",
+  "description": "Crypto for blockchain",
+  "main": "aes.js",
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tridencorp/cypher.js.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tridencorp/cypher.js/issues"
+  },
+  "homepage": "https://github.com/tridencorp/cypher.js#readme"
 }
