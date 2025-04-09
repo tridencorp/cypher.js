@@ -1,6 +1,10 @@
 class DB {
   constructor(db) {
     this.db = db;
+
+    // Available callbacks
+    this.before_set = null;
+    this.after_get  = null;
   }
 
   // Set key/value in collection
@@ -9,6 +13,10 @@ class DB {
     const store = tx.objectStore(collection);
 
     await new Promise((resolve, reject) => {
+      if (this.before_set) {
+        key, value = this.before_set(key, value);
+      }
+
       const request = store.put(value, key);
 
       request.onsuccess = async () => {
@@ -31,7 +39,8 @@ class DB {
       const request = store.get(key);
 
       request.onsuccess = async () => {
-        tx.oncomplete = () => resolve(request.result);
+        const result = this.after_get ? this.after_get(request.result) : request.result;
+        tx.oncomplete = () => resolve(result);
       };
 
       request.onerror = () => {
