@@ -65,3 +65,24 @@ export async function open(name, version) {
     };
   });
 }
+
+// Drop whole database.
+export function drop(database) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(database)
+
+    request.onsuccess = () => {
+      console.log(`Database ${database} deleted successfully.`);
+      resolve();
+    };
+
+    request.onerror = (event) => {
+      console.error(`Error deleting database ${database}:`, event.target.error);
+      reject(event.target.error);
+    };
+
+    request.onblocked = () => {
+      console.warn(`Database ${database} is blocked. Close any open connections to the database before deleting.`);
+    };
+  });
+} 
