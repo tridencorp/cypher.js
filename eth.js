@@ -4,8 +4,8 @@ class Address {
   constructor() {
     // TODO: encrypt priv key before returning it
     this.wallet = ethers.Wallet.createRandom();
-
     this.address = this.wallet.address;
+    
     this.prv = this.wallet.privateKey;
     this.pub = this.wallet.publicKey;
   }
@@ -15,7 +15,7 @@ class Address {
     return this.wallet.signMessage(message)
   }
 
-  // Sign data with private key
+  // Verify signed message 
   verify(message, signature) {
     const address = ethers.verifyMessage(message, signature);
     return this.address == address;
