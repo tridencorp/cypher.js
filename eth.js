@@ -14,6 +14,12 @@ class Address {
   sign(message) {
     return this.wallet.signMessage(message)
   }
+
+  // Sign data with private key
+  verify(message, signature) {
+    const address = ethers.verifyMessage(message, signature);
+    return this.address == address;
+  }
 }
 
 // Generate public address with priv/pub keys.
