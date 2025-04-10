@@ -24,4 +24,14 @@ describe('DB', function () {
       expect(result.value).to.equal(i);
     }
   });
+
+  it('should get all keys from collection', async function () {
+    for (let i = 0; i < 1_000; i++) {
+      const item = { name: `item${i}`, value: i };
+      await db.set('addresses', `key_${i}`, item);
+    }
+
+    const result = await db.all('addresses');
+    expect(result.length).to.equal(1000);
+  });
 });

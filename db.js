@@ -49,10 +49,10 @@ class DB {
     });
   }
 
-  // Get all keys from collection. TODO: use cursor.
+  // Get all keys from collection.
   async all(collection) {
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(collection, 'readonly');
+      const tx = this.db.transaction(collection, 'readonly');
       const store = tx.objectStore(collection);
 
       let request = store.openCursor();
