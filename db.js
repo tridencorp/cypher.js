@@ -18,12 +18,15 @@ class DB {
       const request = store.put(val, key);
 
       request.onsuccess = async () => {
-        tx.oncomplete = () => resolve();
+        resolve();
       }
 
-      request.onerror = () => {
-        reject(request.error);
-        tx.onerror = () => reject(tx.error);  
+      request.onerror = (event) => {
+        reject(event.target.error);
+      }
+
+      tx.onerror = (event) => {
+        reject(event.target.error);
       }
     });
   }
@@ -37,14 +40,21 @@ class DB {
       const request = store.get(key);
 
       request.onsuccess = async () => {
-        // Call after_get callback 
-        const result = this.after_get(request.result)
-        tx.oncomplete = () => resolve(result);
+        try {
+          // Call after_get callback
+          const result = this.after_get(request.result)
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
       };
 
-      request.onerror = () => {
-        reject('Failed to retrieve record');
-        tx.onerror = () => reject(tx.error);  
+      request.onerror = (event) => {
+        reject(event.target.error);
+      };
+
+      tx.onerror = (event) => {
+        reject(event.target.error);
       };
     });
   }
