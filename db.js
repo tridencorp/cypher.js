@@ -15,7 +15,6 @@ class DB {
     await new Promise((resolve, reject) => {
       // Call before_set callback
       key, val = this.before_set(key, val);
-
       const request = store.put(val, key);
 
       request.onsuccess = async () => {
@@ -40,7 +39,6 @@ class DB {
       request.onsuccess = async () => {
         // Call after_get callback 
         const result = this.after_get(request.result)
-
         tx.oncomplete = () => resolve(result);
       };
 
@@ -55,17 +53,30 @@ class DB {
   async all(collection) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(collection, 'readonly');
-      const store = transaction.objectStore(collection);
+      const store = tx.objectStore(collection);
 
-      const request = store.getAll();
+      let request = store.openCursor();
+      let result = []
+        
+      request.onsuccess = function(event) {
+        let cursor = event.target.result;
 
-      request.onsuccess = () => {
-        tx.oncomplete = () => resolve(request.result);
+        if (cursor) {
+          result.push([cursor.key, cursor.value])
+          cursor.continue();
+        }
       };
 
-      request.onerror = (event) => {
+      request.onerror = function (event) {
         reject(event.target.error);
-        tx.onerror = () => reject(tx.error);  
+      };
+
+      tx.oncomplete = function() {
+        resolve(result);
+      };
+      
+      tx.onerror = function (event) {
+        reject(event.target.error);
       };
     });
   }
