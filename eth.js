@@ -3,11 +3,16 @@ import { ethers } from 'ethers';
 class Address {
   constructor() {
     // TODO: encrypt priv key before returning it
-    const wallet = ethers.Wallet.createRandom();
+    this.wallet = ethers.Wallet.createRandom();
 
-    this.address = wallet.address;
-    this.prv = wallet.privateKey;
-    this.pub = wallet.publicKey;
+    this.address = this.wallet.address;
+    this.prv = this.wallet.privateKey;
+    this.pub = this.wallet.publicKey;
+  }
+  
+  // Sign data with private key
+  sign(message) {
+    return this.wallet.signMessage(message)
   }
 }
 
