@@ -3,21 +3,20 @@ class DB {
     this.db = db;
 
     // Available callbacks
-    this.before_set = null;
-    this.after_get  = null;
+    this.before_set = (key, val) => { return key, val };
+    this.after_get = (val) => { return val };
   }
 
-  // Set key/value in collection
-  async set(collection, key, value) {
+  // Set key/val in collection
+  async set(collection, key, val) {
     const tx = this.db.transaction(collection, 'readwrite');
     const store = tx.objectStore(collection);
 
     await new Promise((resolve, reject) => {
-      if (this.before_set) {
-        key, value = this.before_set(key, value);
-      }
+      // Call before_set callback
+      key, val = this.before_set(key, val);
 
-      const request = store.put(value, key);
+      const request = store.put(val, key);
 
       request.onsuccess = async () => {
         tx.oncomplete = () => resolve();
@@ -39,12 +38,33 @@ class DB {
       const request = store.get(key);
 
       request.onsuccess = async () => {
-        const result = this.after_get ? this.after_get(request.result) : request.result;
+        // Call after_get callback 
+        const result = this.after_get(request.result)
+
         tx.oncomplete = () => resolve(result);
       };
 
       request.onerror = () => {
         reject('Failed to retrieve record');
+        tx.onerror = () => reject(tx.error);  
+      };
+    });
+  }
+
+  // Get all keys from collection. TODO: use cursor.
+  async all(collection) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(collection, 'readonly');
+      const store = transaction.objectStore(collection);
+
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        tx.oncomplete = () => resolve(request.result);
+      };
+
+      request.onerror = (event) => {
+        reject(event.target.error);
         tx.onerror = () => reject(tx.error);  
       };
     });
@@ -75,7 +95,7 @@ export async function open(name, version) {
   });
 }
 
-// Drop whole database.
+// Drop whole database
 export function drop(database) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.deleteDatabase(database)
@@ -91,7 +111,7 @@ export function drop(database) {
     };
 
     request.onblocked = () => {
-      console.warn(`Database ${database} is blocked. Close any open connections to the database before deleting.`);
+      console.warn(`Database ${database} is blocked. Close all connections.`);
     };
   });
 } 

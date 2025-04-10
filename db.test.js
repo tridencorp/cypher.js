@@ -11,13 +11,17 @@ describe('DB', function () {
     db = await open("test", 1);
   });
 
-  it('should add and retrieve an item from the database', async function () {
-    const item = { name: 'test item', value: 42 };
-    await db.set('addresses', 'key1', item);
+  it('should set and get keys from database', async function () {
+    for (let i = 0; i < 1_000; i++) {
+      const item = { name: `item${i}`, value: i };
+      await db.set('addresses', `key_${i}`, item);
+    }
 
-    const result = await db.get('addresses', 'key1');
+    for (let i = 0; i < 1_000; i++) {
+      const result = await db.get('addresses', `key_${i}`);
 
-    expect(result.name).to.equal('test item');
-    expect(result.value).to.equal(42);
+      expect(result.name).to.equal(`item${i}`);
+      expect(result.value).to.equal(i);
+    }
   });
 });
