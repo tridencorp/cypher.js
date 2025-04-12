@@ -1,3 +1,6 @@
+// Keep track of open databases and try to reuse them.
+let databases = {};
+
 class DB {
   constructor(db) {
     this.db = db;
@@ -94,11 +97,15 @@ class DB {
 
 // Open database
 export async function open(name, version) {
+  // Check if database is already opened
+  if (databases[name]) return databases[name];
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name, version);
 
     request.onsuccess = (event) => {
       const db = new DB(event.target.result);
+      databases[name] = db;
       resolve(db);
     };
 
