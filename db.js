@@ -75,7 +75,7 @@ class DB {
         let cursor = event.target.result;
 
         if (cursor) {
-          result.push([cursor.key, cursor.value])
+          result.push({ key: cursor.key, val: cursor.value })
           cursor.continue();
         }
       };
@@ -97,8 +97,8 @@ class DB {
 
 // Open database
 export async function open(name, version) {
-  // Check if database is already opened
-  if (databases[name]) return databases[name];
+  // Check if database is already opened, if yes, use it.
+  if (databases[name]) { return databases[name] };
 
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name, version);

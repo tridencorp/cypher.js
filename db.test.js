@@ -9,6 +9,8 @@ describe('DB', function () {
 
   beforeEach(async function () {    
     db = await open("test", 1);
+    db = await open("test", 1);
+    await open("test", 1);
   });
 
   it('should set and get keys from database', async function () {
@@ -35,7 +37,7 @@ describe('DB', function () {
     expect(result.length).to.equal(1000);
 
     for (let i = 0; i < 1_000; i++) {
-      expect(result[i][1].name).to.equal(result[i][0]);
+      expect(result[i].val.name).to.equal(result[i].key);
     }
   });
 });
