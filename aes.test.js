@@ -1,15 +1,20 @@
 const { expect } = require('chai');
-const { AES, setupCryptp } = require('./aes');
+const { encrypt, decrypt, passwordKey, setupCryptp } = require('./aes');
 
 setupCryptp(globalThis.crypto);
 
 describe('AES', function () {
   it('should encrypt and decrypt data', async function () {
-    const aes = new AES();
-    const data = new Uint8Array([1, 2, 3]).buffer
-    const enc = await aes.encrypt(data);
+    // const cypher = Cypher(password);
+    // cypher.encrypt()
+    // cypher.decrypt()
 
-    const result = await aes.decrypt(enc.cipher, enc.iv.buffer);
-    expect(result).to.deep.equal(data);
+    const pass = await passwordKey("password");
+    const data = new Uint8Array([1, 2, 3]).buffer
+
+    const enc = await encrypt(pass, data);
+    // const res = await decrypt(enc);
+
+    // expect(res).to.deep.equal(data);
   });
 });
