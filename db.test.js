@@ -9,28 +9,31 @@ describe('DB', function () {
 
   beforeEach(async function () {    
     db = await open("test", 1);
-    db = await open("test", 1);
     await open("test", 1);
   });
 
   it('should set and get keys from database', async function () {
+    const key = (i) => `key_${i}`;
+
     for (let i = 0; i < 1_000; i++) {
-      const item = { name: `key_${i}`, value: i };
-      await db.set('addresses', `key_${i}`, item);
+      const item = { name: key(i), value: i };
+      await db.set('addresses', key(i), item);
     }
 
     for (let i = 0; i < 1_000; i++) {
-      const result = await db.get('addresses', `key_${i}`);
+      const res = await db.get('addresses', key(i));
 
-      expect(result.name).to.equal(`key_${i}`);
-      expect(result.value).to.equal(i);
+      expect(res.name).to.equal(key(i));
+      expect(res.value).to.equal(i);
     }
   });
 
   it('should get all keys from collection', async function () {
+    const key = (id) => `key_${id}`;
+
     for (let i = 0; i < 1_000; i++) {
-      const item = { name: `key_${i}`, value: i };
-      await db.set('addresses', `key_${i}`, item);
+      const item = { name: key(i), value: i };
+      await db.set('addresses', key(i), item);
     }
 
     const result = await db.all('addresses');
@@ -39,5 +42,8 @@ describe('DB', function () {
     for (let i = 0; i < 1_000; i++) {
       expect(result[i].val.name).to.equal(result[i].key);
     }
+  });
+
+  it('should remove keys from collection', async function () {
   });
 });

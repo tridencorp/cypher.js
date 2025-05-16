@@ -1,5 +1,7 @@
 const { expect } = require('chai');
-const { AES } = require('./aes');
+const { AES, setupCryptp } = require('./aes');
+
+setupCryptp(globalThis.crypto);
 
 describe('AES', function () {
   it('should encrypt and decrypt data', async function () {

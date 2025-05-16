@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 
 class Address {
   constructor() {
-    // TODO: encrypt priv key before returning it
     this.wallet = ethers.Wallet.createRandom();
     this.address = this.wallet.address;
 

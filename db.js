@@ -11,20 +11,20 @@ class DB {
   }
 
   // Set key/val in collection
-  async set(collection, key, val) {
-    const tx = this.db.transaction(collection, 'readwrite');
-    const store = tx.objectStore(collection);
+  async set(coll, key, val) {
+    const tx = this.db.transaction(coll, 'readwrite');
+    const store = tx.objectStore(coll);
 
     await new Promise((resolve, reject) => {
       // Call before_set callback
       key, val = this.before_set(key, val);
-      const request = store.put(val, key);
+      const req = store.put(val, key);
 
-      request.onsuccess = async () => {
+      req.onsuccess = async () => {
         resolve();
       }
 
-      request.onerror = (event) => {
+      req.onerror = (event) => {
         reject(event.target.error);
       }
 
@@ -35,24 +35,24 @@ class DB {
   }
 
   // Get key from collection
-  async get(collection, key) {
-    const tx = this.db.transaction(collection, 'readonly');
-    const store = tx.objectStore(collection);
+  async get(coll, key) {
+    const tx = this.db.transaction(coll, 'readonly');
+    const store = tx.objectStore(coll);
 
     return new Promise((resolve, reject) => {
-      const request = store.get(key);
+      const req = store.get(key);
 
-      request.onsuccess = async () => {
+      req.onsuccess = async () => {
         try {
           // Call after_get callback
-          const result = this.after_get(request.result)
+          const result = this.after_get(req.result)
           resolve(result);
         } catch (error) {
           reject(error);
         }
       };
 
-      request.onerror = (event) => {
+      req.onerror = (event) => {
         reject(event.target.error);
       };
 
@@ -61,17 +61,17 @@ class DB {
       };
     });
   }
-
+ 
   // Get all keys from collection.
-  async all(collection) {
+  async all(coll) {
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(collection, 'readonly');
-      const store = tx.objectStore(collection);
+      const tx = this.db.transaction(coll, 'readonly');
+      const store = tx.objectStore(coll);
 
-      let request = store.openCursor();
+      let req = store.openCursor();
       let result = []
         
-      request.onsuccess = function(event) {
+      req.onsuccess = function(event) {
         let cursor = event.target.result;
 
         if (cursor) {
@@ -80,7 +80,7 @@ class DB {
         }
       };
 
-      request.onerror = function (event) {
+      req.onerror = function (event) {
         reject(event.target.error);
       };
 
@@ -101,21 +101,22 @@ export async function open(name, version) {
   if (databases[name]) { return databases[name] };
 
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, version);
+    const req = indexedDB.open(name, version);
 
-    request.onsuccess = (event) => {
+    req.onsuccess = (event) => {
       const db = new DB(event.target.result);
       databases[name] = db;
       resolve(db);
     };
 
-    request.onerror = (event) => {
+    req.onerror = (event) => {
       reject(event.target.error);
     };
 
-    request.onupgradeneeded = (event) => {
+    req.onupgradeneeded = (event) => {
       const db = event.target.result;
 
+      // TODO: Keep this in constructor.
       if (!db.objectStoreNames.contains('addresses')) {
         db.createObjectStore('addresses');
       }
@@ -124,22 +125,20 @@ export async function open(name, version) {
 }
 
 // Drop whole database
-export function drop(database) {
+export function drop(db) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(database)
+    const req = indexedDB.deleteDatabase(db)
 
-    request.onsuccess = () => {
-      console.log(`Database ${database} deleted successfully.`);
+    req.onsuccess = () => {
       resolve();
     };
 
-    request.onerror = (event) => {
-      console.error(`Error deleting database ${database}:`, event.target.error);
+    req.onerror = (event) => {
       reject(event.target.error);
     };
 
-    request.onblocked = () => {
-      console.warn(`Database ${database} is blocked. Close all connections.`);
+    req.onblocked = () => {
+      reject(new Error(`Database ${db} is blocked.`));
     };
   });
 } 
