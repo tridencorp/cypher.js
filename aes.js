@@ -11,17 +11,22 @@ export function setupCryptp(lib) {
   subtle = lib.subtle;
 }
 
-// PBKDF2 key derivation function
-function pbkdf2(password) {
-  const encoder = new TextEncoder();
-  const pass = encoder.encode(password);
-  const usages = ['deriveBits', 'deriveKey'];
+// Encode/Decode data with password
+export class Cypher {
+  constructor(password) {
 
-  return subtle.importKey('raw', pass, { name: 'PBKDF2' }, false, usages);
+  }
 }
 
-// AES-256
-function aes(pbkdf2, salt) {
+// Derive key from password and use it for AES encryption/decryption
+async function passwordKey(password, salt) {
+  const enc = new TextEncoder();
+  const pass = enc.encode(password);
+
+  let key = await subtle.importKey(
+    'raw', pass, { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']
+  );
+
   const algorithm = {
     name: "PBKDF2",
     salt: salt,
@@ -34,37 +39,33 @@ function aes(pbkdf2, salt) {
     length: 256
   };
 
-  const usages = ['encrypt', 'decrypt'];
-  return subtle.deriveKey(algorithm, pbkdf2, derived, true, usages);
+  return subtle.deriveKey(
+    algorithm, key, derived, true, ['encrypt', 'decrypt']
+  );
 }
 
 function rand(n) {
-  return crypto.getRandomValues(new Uint8Array(16));
+  return crypto.getRandomValues(new Uint8Array(n));
 }
 
-// AES - we are using AES-256 with PBKDF2
 export class AES {
   constructor() {
-    this.salt = rand(16);
-
     this.key = null;
-    this.aes = null;
+    this.salt = rand(16);
   }
 
   async encrypt(data, password) {
     try {
-      // Make sure that we calculate them only once
-      if (!this.key) { this.key = await pbkdf2(password) };
-      if (!this.aes) { this.aes = await aes(this.key, this.salt) };
+      this.key = await passwordKey(password, this.salt);
 
-      const algo = {
+      const algorithm = {
         name: 'AES-GCM',
         iv: rand(12),
         tagLength: 128,
       };
 
-      const cipher = await subtle.encrypt(algo, this.aes, data);
-      return { cipher: cipher, iv: algo.iv, salt: this.salt };
+      const cipher = await subtle.encrypt(algorithm, this.key, data);
+      return { cipher: cipher, iv: algorithm.iv, salt: this.salt };
 
     } catch (err) {
       throw new Error(`AES encryption failed: ${err.message}`);
@@ -74,7 +75,7 @@ export class AES {
   async decrypt(cipher, iv) {
     try {
       const algorithm = { name: "AES-GCM", iv };
-      return await subtle.decrypt(algorithm, this.aes, cipher);
+      return await subtle.decrypt(algorithm, this.key, cipher);
 
     } catch (err) {
       throw new Error(`AES decryption failed: ${err.message}`);
