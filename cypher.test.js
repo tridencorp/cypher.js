@@ -1,7 +1,5 @@
 const { expect } = require('chai');
-const { Cypher, setupCryptp } = require('./cypher');
-
-setupCryptp(globalThis.crypto);
+const { Cypher } = require('./cypher');
 
 describe('Cypher', function () {
   it('should encrypt and decrypt data', async function () {

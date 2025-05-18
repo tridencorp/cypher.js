@@ -4,6 +4,7 @@
     "ethers": "^6.13.5"
   },
   "name": "cypher",
+  "type": "module",
   "version": "1.0.0",
   "description": "Crypto for blockchain",
   "main": "aes.js",

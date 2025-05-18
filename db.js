@@ -1,7 +1,14 @@
+import FDBFactory from "fake-indexeddb/lib/FDBFactory";
+
 // Keep track of open databases and try to reuse them.
 let databases = {};
 
-class DB {
+if (typeof window == 'undefined') {  
+  // const FDBFactory = require('fake-indexeddb/lib/FDBFactory');
+  global.indexedDB = new FDBFactory();
+}
+
+export class DB {
   constructor(db) {
     this.db = db;
 
@@ -93,15 +100,33 @@ class DB {
       };
     });
   }
+
+  // Remove all keys from collection
+  async clear(coll) {
+    const tx = this.db.transaction(coll, 'readwrite');
+    const store = tx.objectStore(coll);
+
+    return new Promise((resolve, reject) => {
+      let req = store.clear();
+
+      req.onsuccess = () => {
+        resolve();
+      };
+
+      req.onerror = (e) => {
+        reject(e);    
+      };
+    });
+  }
 }
 
 // Open database
-export async function open(name, version) {
+export async function open(name) {
   // Check if database is already opened, if yes, use it.
   if (databases[name]) { return databases[name] };
 
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(name, version);
+    const req = indexedDB.open(name);
 
     req.onsuccess = (event) => {
       const db = new DB(event.target.result);
@@ -119,6 +144,10 @@ export async function open(name, version) {
       // TODO: Keep this in constructor.
       if (!db.objectStoreNames.contains('addresses')) {
         db.createObjectStore('addresses');
+      }
+
+      if (!db.objectStoreNames.contains('keys')) {
+        db.createObjectStore('keys');
       }
     };
   });

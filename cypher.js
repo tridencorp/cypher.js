@@ -4,12 +4,9 @@ let subtle = null;
 if (typeof window !== 'undefined') {
   crypto = window.crypto;
   subtle = window.crypto.subtle;
-}
-
-// Only to setup crypto when testing in node.js
-export function setupCryptp(lib) {
-  crypto = lib;
-  subtle = lib.subtle;
+} else {
+  crypto = globalThis.crypto
+  subtle = globalThis.crypto.subtle;
 }
 
 class Password {

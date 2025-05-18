@@ -1,15 +1,11 @@
-const FDBFactory = require('fake-indexeddb/lib/FDBFactory');
-global.indexedDB = new FDBFactory();
-
-const { expect } = require('chai');
-const { open } = require('./db');
+import { expect } from 'chai';
+import { open } from './db.js';
 
 describe('DB', function () {
   let db;
 
   beforeEach(async function () {    
-    db = await open("test", 1);
-    await open("test", 1);
+    db = await open("test");
   });
 
   it('should set and get keys from database', async function () {
@@ -42,8 +38,5 @@ describe('DB', function () {
     for (let i = 0; i < 1_000; i++) {
       expect(result[i].val.name).to.equal(result[i].key);
     }
-  });
-
-  it('should remove keys from collection', async function () {
   });
 });
